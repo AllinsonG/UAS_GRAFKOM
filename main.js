@@ -23,7 +23,7 @@ document.body.appendChild(renderer.domElement);
 //setup scene and camera
 const scene = new THREE.Scene();
 const camera =  new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
-camera.position.set(0,3,100);
+camera.position.set(0,0,0);
 camera.lookAt(0,0,0);
 
 
@@ -65,12 +65,12 @@ camera.lookAt(0,0,0);
   
   function zoomCamera() {
     if (zoomIn) {
-      camera.fov -= 0.2;
+      camera.fov -= 1;
       if (camera.fov < 1) camera.fov = 1; // Batas minimum fov
       updateCamera();
     }
     if (zoomOut) {
-      camera.fov += 0.2;
+      camera.fov += 1;
       if (camera.fov > 180) camera.fov = 180; // Batas maksimum fov
       updateCamera();
     }
@@ -141,7 +141,7 @@ controls1.update();
 
 
 //Light
-//Directional Light
+// Directional Light
 var color = 0xFFFFFF;
 var light  = new THREE.DirectionalLight(color, 0.5);
 light.castShadow = true;
