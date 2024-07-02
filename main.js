@@ -6,7 +6,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls';
 
 
 
@@ -25,6 +25,79 @@ const scene = new THREE.Scene();
 const camera =  new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
 camera.position.set(0,3,100);
 camera.lookAt(0,0,0);
+
+
+// zoom in/out
+{
+  class MinMaxGUIHelper {
+    constructor(obj, minProp, maxProp, minDif) {
+      this.obj = obj;
+      this.minProp = minProp;
+      this.maxProp = maxProp;
+      this.minDif = minDif;
+    }
+    get min() {
+      return this.obj[this.minProp];
+    }
+    set min(v) {
+      this.obj[this.minProp] = v;
+      this.obj[this.maxProp] = Math.max(this.obj[this.maxProp], v + this.minDif);
+    }
+    get max() {
+      return this.obj[this.maxProp];
+    }
+    set max(v) {
+      this.obj[this.maxProp] = v;
+      this.min = this.min;  // this will call the min setter
+    }
+  }
+  
+  function updateCamera() {
+    camera.updateProjectionMatrix();
+  }
+  
+  
+  const minMaxGUIHelper = new MinMaxGUIHelper(camera, 'near', 'far', 0.1);
+  
+  
+  let zoomIn = false;
+  let zoomOut = false;
+  
+  function zoomCamera() {
+    if (zoomIn) {
+      camera.fov -= 0.2;
+      if (camera.fov < 1) camera.fov = 1; // Batas minimum fov
+      updateCamera();
+    }
+    if (zoomOut) {
+      camera.fov += 0.2;
+      if (camera.fov > 180) camera.fov = 180; // Batas maksimum fov
+      updateCamera();
+    }
+    requestAnimationFrame(zoomCamera);
+  }
+  
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'z') {
+      zoomIn = true;
+    }
+    if (event.key === 'x') {
+      zoomOut = true;
+    }
+  });
+  
+  window.addEventListener('keyup', (event) => {
+    if (event.key === 'z') {
+      zoomIn = false;
+    }
+    if (event.key === 'x') {
+      zoomOut = false;
+    }
+  });
+  
+  zoomCamera();  // Memulai loop zoom
+  }
+
 
 //geometry
 // const points = [];
@@ -51,11 +124,20 @@ camera.lookAt(0,0,0);
 
 const objects = [];
 
+//Rotate tilt
+
+const controls = new FlyControls(camera, renderer.domElement)
+controls.movementSpeed = 1000;
+controls.rollSpeed = Math.PI / 24;
+controls.autoForward = false;
+controls.dragToLook = true;
+controls.update(0.01)
+
 
 //Orbit Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0,5,0);
-controls.update();
+const controls1 = new OrbitControls(camera, renderer.domElement);
+controls1.target.set(0,5,0);
+controls1.update();
 
 
 //Light
@@ -171,25 +253,25 @@ const onProgress = function (xhr){
 }
 
 
-const loader = new GLTFLoader().setPath('resources/test/');
-loader.load('Map.gltf', async function (gltf) {
+// const loader = new GLTFLoader().setPath('resources/test/');
+// loader.load('Map.gltf', async function (gltf) {
 
 
-  const model = gltf.scene;
-  console.log(model)
-  // model.children[0].children.forEach(element => {
-  //   element.castShadow = true;
-  //   element.receiveShadow = true;
-  //   element.material.wireframe = false;
-  // });
+//   const model = gltf.scene;
+//   console.log(model)
+//   // model.children[0].children.forEach(element => {
+//   //   element.castShadow = true;
+//   //   element.receiveShadow = true;
+//   //   element.material.wireframe = false;
+//   // });
 
 
-  model.position.set(0, -5, 0);
-  model.scale.set( 2, 2, 2 );
-  scene.add(model);
+//   model.position.set(0, -5, 0);
+//   model.scale.set( 2, 2, 2 );
+//   scene.add(model);
 
 
-});
+// });
 
 
 const loader1 = new FBXLoader();
@@ -287,7 +369,7 @@ var time_prev = 0;
 function animate(time){
   var dt = time- time_prev;
   dt *=  0.1;
-
+  controls.update(0.01);
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
   
