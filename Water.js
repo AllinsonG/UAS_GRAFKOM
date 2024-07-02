@@ -162,9 +162,9 @@ class Water extends Mesh {
 					#include <logdepthbuf_fragment>
 					vec4 noise = getNoise( worldPosition.xz * size );
 					vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );
-
-					vec3 diffuseLight = vec3(0.0);
-					vec3 specularLight = vec3(0.0);
+                    // Diffuse Lightning
+					vec3 diffuseLight = vec3(0.1);
+					vec3 specularLight = vec3(10.0);
 
 					vec3 worldToEye = eye-worldPosition.xyz;
 					vec3 eyeDirection = normalize( worldToEye );

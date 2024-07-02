@@ -11,6 +11,8 @@ import { FlyControls } from 'three/examples/jsm/controls/FlyControls';
 import { Water } from './Water.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
+
+
 const clock = new THREE.Clock();
 
 let mixer,skybox,skyboxGeo,water,sun;
@@ -177,6 +179,11 @@ light = new THREE.SpotLight(0xFF0000, 50);
 light.castShadow = true;
 light.position.set(10,10,0);
 scene.add(light);
+
+//Ambient Diffuse Specular
+
+var ambientLight = new THREE.AmbientLight(0x404040);
+scene.add(ambientLight);
 
 const cam = light.shadow.camera;
 		cam.near = 1;
