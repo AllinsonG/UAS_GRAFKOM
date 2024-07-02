@@ -1,5 +1,6 @@
 import './style.css'
 import * as THREE from 'three';
+
 import {OrbitControls} from 'three/examples/jsm/Addons.js';
 // import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -148,8 +149,8 @@ controls1.update();
 
 //Light and shadow
 // Directional Light
-var color = 0xFFFFFF;
-var light  = new THREE.DirectionalLight(color, 0.5);
+// var color = 0xFFFFFF;
+var light  = new THREE.DirectionalLight(0xFFFFFF, 0.5);
 light.castShadow = true;
 light.shadow.bias = -0.004;
 light.shadow.mapSize.width = 2048;
@@ -180,10 +181,11 @@ light.castShadow = true;
 light.position.set(10,10,0);
 scene.add(light);
 
-//Ambient Diffuse Specular
+//Ambient
 
 var ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
+
 
 const cam = light.shadow.camera;
 		cam.near = 1;
@@ -395,6 +397,14 @@ const loader1 = new FBXLoader();
 //     if ( node.isMesh || node.isLight ) 
 
 //     node.receiveShadow = true;
+        // const material = new THREE.MeshPhongMaterial({
+        //   color: 0xffffff, // Diffuse color
+        //   specular: 0x222222, // Specular color
+        //   shininess: 25, // Shininess level
+        // });
+
+        // // Apply the material to the mesh
+        // node.material = material;
 
 //   } );
 
