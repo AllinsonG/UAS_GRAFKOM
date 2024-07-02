@@ -7,12 +7,13 @@ import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { FlyControls } from 'three/examples/jsm/controls/FlyControls';
-
-
+//Edit the transparency
+import { Water } from './Water.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 const clock = new THREE.Clock();
 
-let mixer,skybox,skyboxGeo;
+let mixer,skybox,skyboxGeo,water,sun;
 
 
 const renderer = new THREE.WebGLRenderer();
@@ -143,7 +144,7 @@ controls1.target.set(0,5,0);
 controls1.update();
 
 
-//Light
+//Light and shadow
 // Directional Light
 var color = 0xFFFFFF;
 var light  = new THREE.DirectionalLight(color, 0.5);
@@ -179,11 +180,11 @@ scene.add(light);
 
 const cam = light.shadow.camera;
 		cam.near = 1;
-		cam.far = 20;
-		cam.left = - 15;
-		cam.right = 15;
-		cam.top = 15;
-		cam.bottom = - 15;
+		cam.far = 15;
+		cam.left = - 10;
+		cam.right = 10;
+		cam.top = 10;
+		cam.bottom = - 10;
 
 		const cameraHelper = new THREE.CameraHelper( cam );
 		scene.add( cameraHelper );
@@ -232,6 +233,84 @@ const cam = light.shadow.camera;
 
 			
 // 						} );
+
+//Sun
+sun = new THREE.Vector3();
+//Water
+
+  const waterGeometry = new THREE.PlaneGeometry( 10000, 10000 );
+
+  water = new Water(
+    waterGeometry,
+    {
+      textureWidth: 512,
+      textureHeight: 512,
+      waterNormals: new THREE.TextureLoader().load( 'resources/test/waternormals.jpg', function ( texture ) {
+
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        
+
+      } ),
+      sunDirection: new THREE.Vector3(),
+      sunColor: 0xffffff,
+      waterColor: 0x001e0f,
+      distortionScale: 3.7,
+      fog: scene.fog !== undefined,
+      opacity: 0.5,  // Set the desired opacity here
+      transparent: true
+    }
+  );
+
+
+  water.rotation.x = - Math.PI / 2;
+  
+  scene.add( water );
+
+
+const parameters = {
+  elevation: 2,
+  azimuth: 180
+};
+
+const pmremGenerator = new THREE.PMREMGenerator( renderer );
+const sceneEnv = new THREE.Scene();
+
+let renderTarget;
+
+function updateSun() {
+
+  const phi = THREE.MathUtils.degToRad( 90 - parameters.elevation );
+  const theta = THREE.MathUtils.degToRad( parameters.azimuth );
+
+  sun.setFromSphericalCoords( 1, phi, theta );
+
+
+  water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
+
+  if ( renderTarget !== undefined ) renderTarget.dispose();
+
+
+  renderTarget = pmremGenerator.fromScene( sceneEnv );
+
+
+  scene.environment = renderTarget.texture;
+
+}
+
+updateSun();
+
+
+//shaking the water
+
+
+
+
+
+
+
+
+
+
 
 
 let skyboxImage = 'purplenebula';
@@ -283,12 +362,7 @@ const loader1 = new FBXLoader();
 					object.traverse( function ( child ) {
 
 						if ( child.isMesh ) {
-
 							child.castShadow = true;
-
-
-              
-
 						}
 
 					} );
@@ -296,34 +370,34 @@ const loader1 = new FBXLoader();
 					scene.add( object );
 
 } );
-
-const loader = new GLTFLoader().setPath('resources/test/');
-loader.load('Map.gltf', async function (gltf) {
-
-
-  const model = gltf.scene;
-  // model.children[0].children.forEach(element => {
-
-  //   element.receiveShadow = true;
-  //   element.material.wireframe = false;
-  // });
-
-  model.traverse( function ( node ) {
+//Map
+// const loader = new GLTFLoader().setPath('resources/test/');
+// loader.load('Map.gltf', async function (gltf) {
 
 
-    if ( node.isMesh || node.isLight ) 
+//   const model = gltf.scene;
+//   // model.children[0].children.forEach(element => {
 
-    node.receiveShadow = true;
+//   //   element.receiveShadow = true;
+//   //   element.material.wireframe = false;
+//   // });
 
-  } );
-
-
-  model.position.set(0, -5, 0);
-  model.scale.set( 2, 2, 2 );
-  scene.add(model);
+//   model.traverse( function ( node ) {
 
 
-});
+//     if ( node.isMesh || node.isLight ) 
+
+//     node.receiveShadow = true;
+
+//   } );
+
+
+//   model.position.set(0, -5, 0);
+//   model.scale.set( 2, 2, 2 );
+//   scene.add(model);
+
+
+// });
 
 
 
@@ -402,7 +476,7 @@ function animate(time){
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
   
-
+  water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
   // objects.forEach((obj)=>{
   //   obj.rotation.z += dt * 0.01;
   // });
