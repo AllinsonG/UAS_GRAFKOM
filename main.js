@@ -16,6 +16,7 @@ let mixer,skybox,skyboxGeo;
 
 
 const renderer = new THREE.WebGLRenderer();
+renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -23,7 +24,7 @@ document.body.appendChild(renderer.domElement);
 //setup scene and camera
 const scene = new THREE.Scene();
 const camera =  new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
-camera.position.set(0,0,0);
+camera.position.set(0,3,100);
 camera.lookAt(0,0,0);
 
 
@@ -54,7 +55,9 @@ camera.lookAt(0,0,0);
   
   function updateCamera() {
     camera.updateProjectionMatrix();
+    
   }
+
   
   
   const minMaxGUIHelper = new MinMaxGUIHelper(camera, 'near', 'far', 0.1);
@@ -145,6 +148,9 @@ controls1.update();
 var color = 0xFFFFFF;
 var light  = new THREE.DirectionalLight(color, 0.5);
 light.castShadow = true;
+light.shadow.bias = -0.004;
+light.shadow.mapSize.width = 2048;
+light.shadow.mapSize.height = 2048;
 light.position.set(0,10,0);
 light.target.position.set(-5,0,0);
 scene.add(light);
@@ -152,7 +158,7 @@ scene.add(light.target);
 
 
 //HemiSphere light
-                                  //Skycolor  //GroundColor //Intensity
+                                  // Skycolor  //GroundColor //Intensity
 light = new THREE.HemisphereLight(0xB1E1FF, 0xB97A20, 5);
 light.castShadow = true;
 scene.add(light);
@@ -165,13 +171,26 @@ light.castShadow = true;
 light.position.set(10,10,0);
 scene.add(light);
 
-//Spot Light
+// // //Spot Light
 light = new THREE.SpotLight(0xFF0000, 50);
 light.castShadow = true;
 light.position.set(10,10,0);
 scene.add(light);
 
+const cam = light.shadow.camera;
+		cam.near = 1;
+		cam.far = 20;
+		cam.left = - 15;
+		cam.right = 15;
+		cam.top = 15;
+		cam.bottom = - 15;
 
+		const cameraHelper = new THREE.CameraHelper( cam );
+		scene.add( cameraHelper );
+    cameraHelper.visible = false;
+    const helper = new THREE.DirectionalLightHelper( light, 100 );
+		scene.add( helper );
+		helper.visible = false;
 
 
 // //Geometry
@@ -242,41 +261,19 @@ const materialArray = createMaterialArray(skyboxImage);
 
 skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
 skybox = new THREE.Mesh(skyboxGeo, materialArray);
+// skybox.receiveShadow = true;
 
 scene.add(skybox);
 
 const onProgress = function (xhr){
   if(xhr.lengthComputable){
     const percentComplete = xhr.loaded / xhr.total * 100;
-    console.log(percentComplete.toFixed(2) + '% downloaded');
+
   }
 }
-
-
-// const loader = new GLTFLoader().setPath('resources/test/');
-// loader.load('Map.gltf', async function (gltf) {
-
-
-//   const model = gltf.scene;
-//   console.log(model)
-//   // model.children[0].children.forEach(element => {
-//   //   element.castShadow = true;
-//   //   element.receiveShadow = true;
-//   //   element.material.wireframe = false;
-//   // });
-
-
-//   model.position.set(0, -5, 0);
-//   model.scale.set( 2, 2, 2 );
-//   scene.add(model);
-
-
-// });
-
-
 const loader1 = new FBXLoader();
 				loader1.load( 'resources/character1/Standing Death Forward 01.fbx', function ( object ) {
-          object.scale.multiplyScalar(0.05);
+          object.scale.multiplyScalar(0.05);//0.05
           object.position.set(0,-5,-100);
 					mixer = new THREE.AnimationMixer( object );
 
@@ -288,7 +285,8 @@ const loader1 = new FBXLoader();
 						if ( child.isMesh ) {
 
 							child.castShadow = true;
-							child.receiveShadow = true;
+
+
               
 
 						}
@@ -298,6 +296,37 @@ const loader1 = new FBXLoader();
 					scene.add( object );
 
 } );
+
+const loader = new GLTFLoader().setPath('resources/test/');
+loader.load('Map.gltf', async function (gltf) {
+
+
+  const model = gltf.scene;
+  // model.children[0].children.forEach(element => {
+
+  //   element.receiveShadow = true;
+  //   element.material.wireframe = false;
+  // });
+
+  model.traverse( function ( node ) {
+
+
+    if ( node.isMesh || node.isLight ) 
+
+    node.receiveShadow = true;
+
+  } );
+
+
+  model.position.set(0, -5, 0);
+  model.scale.set( 2, 2, 2 );
+  scene.add(model);
+
+
+});
+
+
+
 
 
 
