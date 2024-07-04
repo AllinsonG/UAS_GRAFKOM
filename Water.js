@@ -42,7 +42,7 @@ class Water extends Mesh {
 		const sunColor = new Color( options.sunColor !== undefined ? options.sunColor : 0xffffff );
 		const waterColor = new Color( options.waterColor !== undefined ? options.waterColor : 0x7F7F7F );
 		const eye = options.eye !== undefined ? options.eye : new Vector3( 0, 0, 0 );
-		const distortionScale = options.distortionScale !== undefined ? options.distortionScale : 20.0;
+		const distortionScale = options.distortionScale !== undefined ? options.distortionScale : 10.0;
 		const side = options.side !== undefined ? options.side : FrontSide;
 		const fog = options.fog !== undefined ? options.fog : false;
 
@@ -79,7 +79,7 @@ class Water extends Mesh {
 					'alpha': { value: 1.0 },
 					'time': { value: 0.0 },
 					'size': { value: 1.0 },
-					'distortionScale': { value: 20.0 },
+					'distortionScale': { value: 10.0 },
 					'textureMatrix': { value: new Matrix4() },
 					'sunColor': { value: new Color( 0x7F7F7F ) },
 					'sunDirection': { value: new Vector3( 0.70707, 0.70707, 0 ) },
